@@ -16,12 +16,12 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Stop and remove previous container if exists
-                    docker.stop('myapp') || true
-                    docker.rm('myapp') || true
+                    // Stop and remove previous container if it exists
+                    sh "docker stop myapp || true"
+                    sh "docker rm myapp || true"
                     
                     // Run new container
-                    docker.run('myapp:latest', '-d -p 5000:5000 --name myapp')
+                    docker.image('myapp:latest').run('-d -p 5000:5000 --name myapp')
                 }
             }
         }
