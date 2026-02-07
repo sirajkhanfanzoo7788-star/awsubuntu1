@@ -1,66 +1,39 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "sirajahmad77/awsubuntu1:latest"
-        CONTAINER_NAME = "myapp"
-        APP_PORT = "5000"
-    }
-
     stages {
-
-        stage('Clone Repository') {
+        stage('Clone Repo') {
             steps {
-                echo "Cloning GitHub repository..."
                 git branch: 'main', url: 'https://github.com/sirajkhanfanzoo7788-star/awsubuntu1.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
-                sh "docker build -t ${CONTAINER_NAME}:latest ."
+                sh 'docker build -t myapp:latest .'
             }
         }
 
-        stage('Docker Login & Push') {
+        stage('Push Docker Image') {
             steps {
-                echo "Logging into DockerHub and pushing image..."
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USR', passwordVariable: 'DOCKERHUB_PSW')]) {
                     sh '''
                         echo "$DOCKERHUB_PSW" | docker login -u "$DOCKERHUB_USR" --password-stdin
-                        docker tag ${CONTAINER_NAME}:latest ${IMAGE_NAME}
-                        docker push ${IMAGE_NAME}
+                        docker tag myapp:latest sirajahmad77/awsubuntu1:latest
+                        docker push sirajahmad77/awsubuntu1:latest
                     '''
                 }
             }
         }
 
-        stage('Stop & Remove Existing Container') {
-            steps {
-                echo "Stopping and removing existing container if any..."
-                sh '''
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-                '''
-            }
-        }
-
         stage('Run Docker Container') {
             steps {
-                echo "Running container on port ${APP_PORT}..."
-                sh "docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+                sh '''
+                    docker stop myapp || true
+                    docker rm myapp || true
+                    docker run -d -p 5000:5000 --name myapp sirajahmad77/awsubuntu1:latest
+                '''
             }
-        }
-
-    }
-
-    post {
-        success {
-            echo "Pipeline completed successfully! Your app is running on port ${APP_PORT}."
-        }
-        failure {
-            echo "Pipeline failed. Check the logs above for errors."
         }
     }
 }
