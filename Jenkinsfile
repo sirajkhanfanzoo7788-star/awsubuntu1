@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB = credentials('dockerhub-creds') // <-- make sure ID matches exactly
+        // Reference your Docker Hub credential ID here
+        DOCKERHUB = credentials('dockerhub-credentials')
     }
 
     stages {
