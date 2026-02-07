@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Reference your Docker Hub credential ID here
+        // This will create DOCKERHUB_USR and DOCKERHUB_PSW automatically
         DOCKERHUB = credentials('dockerhub-credentials')
     }
 
