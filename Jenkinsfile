@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB = credentials('dockerhub-creds') // <-- exact credential ID from Jenkins
+        DOCKERHUB = credentials('dockerhub-creds') // <-- make sure ID matches exactly
     }
 
     stages {
@@ -14,9 +14,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t myapp:latest .
-                '''
+                sh 'docker build -t myapp:latest .'
             }
         }
 
