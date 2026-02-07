@@ -1,28 +1,28 @@
 pipeline {
     agent any
+
     stages {
         stage('Clone Repo') {
             steps {
                 git branch: 'main', url: 'https://github.com/sirajkhanfanzoo7788-star/awsubuntu1.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build('myapp:latest')
-                }
+                sh '''
+                docker build -t myapp:latest .
+                '''
             }
         }
+
         stage('Run Docker Container') {
             steps {
-                script {
-                    // Stop and remove previous container if it exists
-                    sh "docker stop myapp || true"
-                    sh "docker rm myapp || true"
-                    
-                    // Run new container
-                    docker.image('myapp:latest').run('-d -p 5000:5000 --name myapp')
-                }
+                sh '''
+                docker stop myapp || true
+                docker rm myapp || true
+                docker run -d -p 5000:5000 --name myapp myapp:latest
+                '''
             }
         }
     }
