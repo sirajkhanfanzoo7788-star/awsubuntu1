@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Add your Docker Hub creds in Jenkins
-        IMAGE_NAME = 'sirajahmad77/awsubuntu1:latest'          // Your Docker Hub repo
+        DOCKER_USERNAME = credentials('dockerhub-username') // Your Docker Hub username
+        DOCKER_PASSWORD = credentials('dockerhub-password') // Your Docker Hub password
+        IMAGE_NAME = 'sirajahmad77/awsubuntu1:latest'
     }
 
     stages {
@@ -23,12 +24,11 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-                        sh 'docker tag myapp:latest $IMAGE_NAME'
-                        sh 'docker push $IMAGE_NAME'
-                    }
-                }
+                sh '''
+                echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                docker tag myapp:latest $IMAGE_NAME
+                docker push $IMAGE_NAME
+                '''
             }
         }
 
