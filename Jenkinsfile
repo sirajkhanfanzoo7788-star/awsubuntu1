@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credential-id') // <-- use the ID you just created
+        DOCKERHUB = credentials('dockerhub-creds') // <-- exact credential ID from Jenkins
     }
 
     stages {
@@ -14,27 +14,29 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t myapp:latest .'
+                sh '''
+                docker build -t myapp:latest .
+                '''
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh """
-                echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                sh '''
+                echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USR --password-stdin
                 docker tag myapp:latest sirajahmad77/awsubuntu1:latest
                 docker push sirajahmad77/awsubuntu1:latest
-                """
+                '''
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                sh """
+                sh '''
                 docker stop myapp || true
                 docker rm myapp || true
                 docker run -d -p 5000:5000 --name myapp sirajahmad77/awsubuntu1:latest
-                """
+                '''
             }
         }
     }
