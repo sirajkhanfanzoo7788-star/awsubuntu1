@@ -45,7 +45,7 @@ pipeline {
         stage('Docker container creationg') {
             steps {
                 sh "docker rm -f ${Container} || true"
-                sh "docker run -d --name ${Container} -p 3000:80 ${IMAGE_TAG}"
+               sh "docker run -d --name ${Container} -p 3000:5000 ${IMAGE_TAG}"
                 sh "docker image prune -f"
                 echo "✅ Docker image pushed successfully"
             }
