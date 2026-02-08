@@ -1,38 +1,53 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'sirajahmad77/awsubuntu1'
+        IMAGE_TAG  = "${IMAGE_NAME}:${BUILD_NUMBER}"
+        Container  = "khan-name"
+    }
+
     stages {
-        stage('Clone Repo') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/sirajkhanfanzoo7788-star/awsubuntu1.git'
+                git url: 'https://github.com/sirajkhanfanzoo7788-star/awsubuntu1', branch: 'main'
+                sh 'ls -ltr'
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    }
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t myapp:latest .'
+                sh "docker build -t ${IMAGE_TAG} ."
+                sh "docker tag ${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                echo "✅ Docker image built successfully"
+                sh "docker images"
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USR', passwordVariable: 'DOCKERHUB_PSW')]) {
-                    sh '''
-                        echo "$DOCKERHUB_PSW" | docker login -u "$DOCKERHUB_USR" --password-stdin
-                        docker tag myapp:latest sirajahmad77/awsubuntu1:latest
-                        docker push sirajahmad77/awsubuntu1:latest
-                    '''
-                }
+                sh "docker push ${IMAGE_TAG}"
+                sh "docker push ${IMAGE_NAME}:latest"
+                echo "✅ Docker image pushed successfully"
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Docker container creationg') {
             steps {
-                sh '''
-                    docker stop myapp || true
-                    docker rm myapp || true
-                    docker run -d -p 5000:5000 --name myapp sirajahmad77/awsubuntu1:latest
-                '''
+                sh "docker rm -f ${Container} || true"
+                sh "docker run -d --name ${Container} -p 3000:80 ${IMAGE_TAG}"
+                sh "docker image prune -f"
+                echo "✅ Docker image pushed successfully"
             }
         }
     }
