@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = 'sirajahmad77/awsubuntu1'
         IMAGE_TAG  = "${IMAGE_NAME}:${BUILD_NUMBER}"
         Container  = "khan-name"
-        KUBECONFIG = '/home/ubuntu/.kube/config' // Path to your kubeconfig
+       
     }
 
     stages {
