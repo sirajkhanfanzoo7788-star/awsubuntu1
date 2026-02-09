@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -5,6 +6,7 @@ pipeline {
         IMAGE_NAME = 'sirajahmad77/awsubuntu1'
         IMAGE_TAG  = "${IMAGE_NAME}:${BUILD_NUMBER}"
         Container  = "khan-name"
+       
     }
 
     stages {
@@ -51,7 +53,7 @@ pipeline {
             }
         }
 
-        // ✅ NEW STAGE: Deploy to EKS with auto-update
+        // ✅ NEW STAGE: Deploy to EKS with retries and rollout status
         stage('Deploy to EKS') {
             steps {
                 script {
@@ -61,9 +63,6 @@ pipeline {
                             kubectl apply -f deployment.yaml
                             kubectl apply -f service.yaml
                             
-                            # Force pods to update with the new Docker image
-                            kubectl rollout restart deployment/$DEPLOYMENT_NAME
-
                             # Wait for deployment to finish
                             DEPLOYMENT_NAME=$(grep 'name:' deployment.yaml | head -1 | awk '{print $2}')
                             kubectl rollout status deployment/$DEPLOYMENT_NAME --timeout=180s || echo "Deployment may have issues, check manually"
