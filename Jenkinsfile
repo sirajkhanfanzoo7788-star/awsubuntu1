@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = 'sirajahmad77/awsubuntu1'
         IMAGE_TAG  = "${IMAGE_NAME}:${BUILD_NUMBER}"
         Container  = "khan-name"
+        KUBECONFIG = '/home/ubuntu/.kube/config' // Path to your kubeconfig
     }
 
     stages {
@@ -42,22 +43,31 @@ pipeline {
             }
         }
 
-        stage('Docker container creationg') {
+        stage('Docker container creation') {
             steps {
                 sh "docker rm -f ${Container} || true"
                 sh "docker run -d --name ${Container} -p 3000:5000 ${IMAGE_TAG}"
                 sh "docker image prune -f"
-                echo "✅ Docker image pushed successfully"
+                echo "✅ Docker container created successfully"
             }
         }
 
-        // ✅ ONLY NEW STAGE (EKS DEPLOYMENT WITH VALIDATION DISABLED)
+        // ✅ NEW STAGE: Deploy to EKS with retries and rollout status
         stage('Deploy to EKS') {
             steps {
-                sh '''
-                 kubectl apply -f deployment.yaml
-              kubectl apply -f service.yaml
-                '''
+                script {
+                    retry(2) { // Retry in case of transient Jenkins issues
+                        sh '''
+                            echo "Applying deployment to EKS cluster..."
+                            kubectl apply -f deployment.yaml
+                            kubectl apply -f service.yaml
+                            
+                            # Wait for deployment to finish
+                            DEPLOYMENT_NAME=$(grep 'name:' deployment.yaml | head -1 | awk '{print $2}')
+                            kubectl rollout status deployment/$DEPLOYMENT_NAME --timeout=180s || echo "Deployment may have issues, check manually"
+                        '''
+                    }
+                }
             }
         }
     }
