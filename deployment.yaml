@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awsubuntu-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: awsubuntu
+  template:
+    metadata:
+      labels:
+        app: awsubuntu
+    spec:
+      containers:
+      - name: awsubuntu
+        image: sirajahmad77/awsubuntu1:latest
+        ports:
+        - containerPort: 5000
