@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: awsubuntu-app
+  name: awsubuntu-app      # Deployment name used in Jenkins
 spec:
   replicas: 2
   selector:
@@ -13,7 +13,8 @@ spec:
         app: awsubuntu
     spec:
       containers:
-      - name: awsubuntu
+      - name: awsubuntu        # Container name used in Jenkins
         image: sirajahmad77/awsubuntu1:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
